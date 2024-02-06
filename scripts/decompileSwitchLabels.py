@@ -8,20 +8,28 @@ api = FlatProgramAPI(currentProgram)
 decomp = FlatDecompilerAPI(api)
 
 global_start = time()
-# Iterate over all symbols containing "switch
+decompd_functions = {}
+
 for symbol in sym_tab.getSymbolIterator():
+    # check if symbol name contains "switch" 
     sym_string = symbol.getName()
     if "switch" in sym_string.__str__():
-        print(sym_string)
+        # address of symbol in the binary
         sym_addr = symbol.getProgramLocation().getAddress()
-        print(sym_addr)
-
+        # function containing that address
         fn = api.getFunctionContaining(sym_addr)
-        if fn != None:
+        fn_str = fn.__str__()
+        # if the function exists (i.e. in .text), decompile and record time
+        if fn != None and fn_str not in decompd_functions:
             start_time = time()
             decomp.decompile(fn)
             end_time = time()
-            print(fn)
-            print(end_time - start_time) 
 
+            decomp_time = end_time - start_time
+            decompd_functions[fn_str] = decomp_time
+            
+            print(fn_str)
+            print(decomp_time)
+
+print("Total decompile time: ")
 print(time() - global_start)
